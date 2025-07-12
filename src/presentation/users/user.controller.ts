@@ -6,11 +6,10 @@ import { CreateUserUseCase } from "../../application/use-cases/users/CreateUser.
 import { AllUserUseCase } from "../../application/use-cases/users/AllUsers.UseCase";
 import { GetOneUserUseCase } from "../../application/use-cases/users/GetOne.UseCase";
 import { HttpResponse } from "../../utils/http/response.helper";
-import { FieldAlreadyExistsError } from "../../utils/errors/field-exists.error";
-import { NotFoundError } from "../../utils/errors/not-found.error";
+import { BaseController } from "../../utils/controller/base.controller";
 
 @injectable()
-export class UserController {
+export class UserController extends BaseController {
 
     constructor(
         @inject(TYPES.CreateUserUseCase)
@@ -21,43 +20,25 @@ export class UserController {
 
         @inject(TYPES.GetOneUserUseCase)
         private readonly getOne: GetOneUserUseCase
-    ) { }
-
-    public async createUser(req: Request, res: Response): Promise<void> {
-        try {
-            const user = await this.create.execute(req.body);
-            res.status(201).json(HttpResponse.ok(user, "user created successfully"))
-        } catch (error: any) {
-            if (error instanceof FieldAlreadyExistsError) {
-                res.status(400).json(HttpResponse.badRequest(error.message))
-            }
-
-            res.status(500).json(HttpResponse.error("Error interno del servidor", 500, error.message));
-        }
+    ) {
+        super()
     }
 
-    public async getAll(req: Request, res: Response) {
-        try {
-            const users = await this.allUsers.execute()
-            res.status(200).json(HttpResponse.ok(users, "All users"))
-        } catch (error: any) {
-            res.status(400).json(HttpResponse.badRequest(`${error.message}`));
-            console.log(error)
-        }
-    }
+    public createUser = this.handle(async (req: Request, res: Response) => {
+        const user = await this.create.execute(req.body);
+        res.status(201).json(HttpResponse.created(user, "User created successfully"));
+    })
 
-    public async getOneById(req: Request, res: Response) {
-        try {
-            const id = req.params.id
-            const user = await this.getOne.execute(id)
-            res.status(200).json(HttpResponse.ok(user, ""))
-        } catch (error: any) {
-            if (error instanceof NotFoundError) {
-                res.status(404).json(HttpResponse.notFound(error.message))
-            }
-            res.status(500).json(HttpResponse.error("Error interno del servidor", 500, error.message));
-        }
-    }
+    public getAll = this.handle(async (req: Request, res: Response) => {
+        const users = await this.allUsers.execute()
+        res.status(200).json(HttpResponse.ok(users, "All users"))
+    })
+
+    public getOneById = this.handle(async (req: Request, res: Response) => {
+        const id = req.params.id
+        const user = await this.getOne.execute(id)
+        res.status(200).json(HttpResponse.ok(user, ""))
+    })
 
     public async update(req: Request, res: Response) {
         try {
