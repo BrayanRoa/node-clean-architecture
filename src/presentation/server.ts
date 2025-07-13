@@ -1,16 +1,16 @@
 import express, { Application } from "express"
 import { UserRoutes } from "./users/user.routes"
-
+import { envs } from "../config/envs"
 export class Server {
 
     private readonly port: number
     private readonly app: Application
 
-    constructor(port: number) {
-        this.port = port
+    constructor() {
+        this.port = envs.PORT
         this.app = express()
         this.middlewares()
-        this.app.use("/api/v1/", this.routes())
+        this.app.use(envs.BASE_URL, this.routes())
     }
 
     private middlewares() {
@@ -25,7 +25,7 @@ export class Server {
 
     public start() {
         this.app.listen(this.port, () => {
-            console.log(`✅ Servidor corriendo en http://localhost:${this.port}`);
+            console.log(`✅ Server running on http://localhost:${this.port}`);
         })
     }
 }

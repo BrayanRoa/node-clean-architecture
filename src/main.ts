@@ -1,5 +1,5 @@
 import "reflect-metadata";
 import { Server } from "./presentation/server";
 
-const server = new Server(3000);
+const server = new Server();
 server.start();
